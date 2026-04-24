@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.TaskMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.springboot.entity.Task">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="project_id" property="projectId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="priority" property="priority" jdbcType="VARCHAR"/>
+        <result column="assignee_id" property="assigneeId" jdbcType="BIGINT"/>
+        <result column="reporter_id" property="reporterId" jdbcType="BIGINT"/>
+        <result column="start_date" property="startDate" jdbcType="DATE"/>
+        <result column="due_date" property="dueDate" jdbcType="DATE"/>
+        <result column="estimated_hours" property="estimatedHours" jdbcType="DECIMAL"/>
+        <result column="actual_hours" property="actualHours" jdbcType="DECIMAL"/>
+        <result column="progress" property="progress" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="project_name" property="projectName" jdbcType="VARCHAR"/>
+        <result column="assignee_name" property="assigneeName" jdbcType="VARCHAR"/>
+        <result column="reporter_name" property="reporterName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, project_id, name, description, status, priority, assignee_id, reporter_id,
+        start_date, due_date, estimated_hours, actual_hours, progress, create_time, update_time
+    </sql>
+
+    <!-- 插入任务 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.Task" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO task (
+            project_id, name, description, status, priority, assignee_id, reporter_id,
+            start_date, due_date, estimated_hours, actual_hours, progress, create_time, update_time
+        ) VALUES (
+            #{projectId}, #{name}, #{description}, #{status}, #{priority}, #{assigneeId}, #{reporterId},
+            #{startDate}, #{dueDate}, #{estimatedHours}, #{actualHours}, #{progress}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据ID更新任务 -->
+    <update id="updateById" parameterType="com.example.springboot.entity.Task">
+        UPDATE task
+        SET name = #{name},
+            description = #{description},
+            status = #{status},
+            priority = #{priority},
+            assignee_id = #{assigneeId},
+            reporter_id = #{reporterId},
+            start_date = #{startDate},
+            due_date = #{dueDate},
+            estimated_hours = #{estimatedHours},
+            actual_hours = #{actualHours},
+            progress = #{progress},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除任务 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM task WHERE id = #{id}
+    </delete>
+
+    <!-- 根据项目ID删除所有任务 -->
+    <delete id="deleteByProjectId" parameterType="java.lang.Long">
+        DELETE FROM task WHERE project_id = #{projectId}
+    </delete>
+
+    <!-- 根据ID查询任务 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM task
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据项目ID查询所有任务 -->
+    <select id="selectByProjectId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+            t.*,
+            p.name as project_name,
+            u1.real_name as assignee_name,
+            u2.real_name as reporter_name
+        FROM task t
+        LEFT JOIN project p ON t.project_id = p.id
+        LEFT JOIN user u1 ON t.assignee_id = u1.id
+        LEFT JOIN user u2 ON t.reporter_id = u2.id
+        WHERE t.project_id = #{projectId}
+        ORDER BY t.create_time DESC
+    </select>
+
+    <!-- 根据负责人ID查询任务 -->
+    <select id="selectByAssigneeId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+            t.*,
+            p.name as project_name,
+            u1.real_name as assignee_name,
+            u2.real_name as reporter_name
+        FROM task t
+        LEFT JOIN project p ON t.project_id = p.id
+        LEFT JOIN user u1 ON t.assignee_id = u1.id
+        LEFT JOIN user u2 ON t.reporter_id = u2.id
+        WHERE t.assignee_id = #{assigneeId}
+        ORDER BY t.create_time DESC
+    </select>
+
+    <!-- 根据条件查询任务 -->
+    <select id="selectByCondition" parameterType="com.example.springboot.entity.Task" resultMap="BaseResultMap">
+        SELECT 
+            t.*,
+            p.name as project_name,
+            u1.real_name as assignee_name,
+            u2.real_name as reporter_name
+        FROM task t
+        LEFT JOIN project p ON t.project_id = p.id
+        LEFT JOIN user u1 ON t.assignee_id = u1.id
+        LEFT JOIN user u2 ON t.reporter_id = u2.id
+        <where>
+            <if test="projectId != null">
+                AND t.project_id = #{projectId}
+            </if>
+            <if test="name != null and name != ''">
+                AND t.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND t.status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND t.priority = #{priority}
+            </if>
+            <if test="assigneeId != null">
+                AND t.assignee_id = #{assigneeId}
+            </if>
+        </where>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <!-- 统计项目任务数量 -->
+    <select id="countByProjectId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM task WHERE project_id = #{projectId}
+    </select>
+
+    <!-- 统计各状态任务数量 -->
+    <select id="countByStatus" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+            status,
+            COUNT(*) as progress
+        FROM task
+        WHERE project_id = #{projectId}
+        GROUP BY status
+    </select>
+
+</mapper> 

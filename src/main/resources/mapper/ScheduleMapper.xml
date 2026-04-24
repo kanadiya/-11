@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.ScheduleMapper">
+
+    <resultMap id="ScheduleResultMap" type="com.example.springboot.entity.Schedule">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="project_name" property="projectName" />
+        <result column="date" property="date" />
+        <result column="time" property="time" />
+        <result column="venue" property="venue" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 插入赛程 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.Schedule" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO schedule (project_id, date, time, venue, status, create_time, update_time)
+        VALUES (#{projectId}, #{date}, #{time}, #{venue}, #{status}, NOW(), NOW())
+    </insert>
+
+    <!-- 根据ID删除赛程 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM schedule WHERE id = #{id}
+    </delete>
+
+    <!-- 更新赛程 -->
+    <update id="update" parameterType="com.example.springboot.entity.Schedule">
+        UPDATE schedule 
+        SET project_id = #{projectId}, 
+            date = #{date}, 
+            time = #{time}, 
+            venue = #{venue}, 
+            status = #{status}, 
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 仅更新状态 -->
+    <update id="updateStatusById">
+        UPDATE schedule
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID查询赛程 -->
+    <select id="selectById" parameterType="long" resultMap="ScheduleResultMap">
+        SELECT s.id, s.project_id, p.name as project_name, s.date, s.time, s.venue, s.status, s.create_time, s.update_time
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE s.id = #{id}
+    </select>
+
+    <!-- 查询所有赛程（包含项目名称） -->
+    <select id="selectAll" resultMap="ScheduleResultMap">
+        SELECT s.id, s.project_id, p.name as project_name, s.date, s.time, s.venue, s.status, s.create_time, s.update_time
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        ORDER BY s.date ASC, s.time ASC
+    </select>
+
+    <!-- 根据项目ID查询赛程 -->
+    <select id="selectByProjectId" parameterType="long" resultMap="ScheduleResultMap">
+        SELECT s.id, s.project_id, p.name as project_name, s.date, s.time, s.venue, s.status, s.create_time, s.update_time
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE s.project_id = #{projectId}
+        ORDER BY s.date ASC, s.time ASC
+    </select>
+
+    <!-- 获取未开始的比赛 -->
+    <select id="selectUpcomingMatches" resultMap="ScheduleResultMap">
+        SELECT s.id, s.project_id, p.name as project_name, s.date, s.time, s.venue, s.status, s.create_time, s.update_time
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE s.status = '未开始'
+        ORDER BY s.date ASC, s.time ASC
+        LIMIT 10
+    </select>
+
+</mapper> 

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.UserMapper">
+    
+    <resultMap id="BaseResultMap" type="com.example.springboot.entity.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR"/>
+        <result column="student_id" property="studentId" jdbcType="VARCHAR"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="college" property="college" jdbcType="VARCHAR"/>
+        <result column="major" property="major" jdbcType="VARCHAR"/>
+        <result column="class_name" property="className" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="role" property="role" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, username, password, real_name, email, avatar, gender, student_id, age, college, major, class_name, phone, role, status, create_time, update_time
+    </sql>
+
+    <insert id="insert" parameterType="com.example.springboot.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, real_name, email, avatar, gender, student_id, age, college, major, class_name, phone, role, status, create_time, update_time)
+        VALUES (#{username}, #{password}, #{realName}, #{email}, #{avatar}, #{gender}, #{studentId}, #{age}, #{college}, #{major}, #{className}, #{phone}, #{role}, #{status}, NOW(), NOW())
+    </insert>
+
+    <update id="updateById" parameterType="com.example.springboot.entity.User">
+        UPDATE user
+        SET
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            real_name = #{realName},
+            email = #{email},
+            avatar = #{avatar},
+            gender = #{gender},
+            student_id = #{studentId},
+            age = #{age},
+            college = #{college},
+            major = #{major},
+            class_name = #{className},
+            phone = #{phone}, 
+            <if test="role != null and role != ''">
+                role = #{role},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user WHERE username = #{username}
+    </select>
+
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user WHERE phone = #{phone}
+    </select>
+
+    <select id="selectByEmail" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user WHERE email = #{email}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByCondition" parameterType="com.example.springboot.entity.User" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM user
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="realName != null and realName != ''">
+                AND real_name LIKE CONCAT('%', #{realName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="email != null and email != ''">
+                AND email = #{email}
+            </if>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+</mapper>

@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.ResultMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ResultMap" type="com.example.springboot.entity.Result">
+        <id column="id" property="id" />
+        <result column="schedule_id" property="scheduleId" />
+        <result column="user_id" property="userId" />
+        <result column="referee_id" property="refereeId" />
+        <result column="score" property="score" />
+        <result column="unit" property="unit" />
+        <result column="rank" property="rank" />
+        <result column="status" property="status" />
+        <result column="remark" property="remark" />
+        <result column="entry_time" property="entryTime" />
+        <result column="confirm_time" property="confirmTime" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <!-- 关联字段 -->
+        <result column="project_name" property="projectName" />
+        <result column="username" property="username" />
+        <result column="real_name" property="realName" />
+        <result column="referee_name" property="refereeName" />
+        <result column="venue" property="venue" />
+        <result column="schedule_date" property="scheduleDate" />
+        <result column="schedule_time" property="scheduleTime" />
+        <result column="schedule_status" property="scheduleStatus" />
+    </resultMap>
+
+    <!-- 插入成绩记录 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.Result" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `result` (
+            `schedule_id`, `user_id`, `referee_id`, `score`, `unit`, `rank`, `status`, `remark`,
+            `entry_time`, `confirm_time`, `create_time`, `update_time`
+        ) VALUES (
+            #{scheduleId}, #{userId}, #{refereeId}, #{score}, #{unit}, #{rank}, #{status}, #{remark},
+            #{entryTime}, #{confirmTime}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据ID更新成绩记录 -->
+    <update id="updateById" parameterType="com.example.springboot.entity.Result">
+        UPDATE `result` SET
+            `schedule_id` = #{scheduleId},
+            `user_id` = #{userId},
+            `referee_id` = #{refereeId},
+            `score` = #{score},
+            `unit` = #{unit},
+            `rank` = #{rank},
+            `status` = #{status},
+            `remark` = #{remark},
+            `entry_time` = #{entryTime},
+            `confirm_time` = #{confirmTime},
+            `update_time` = NOW()
+        WHERE `id` = #{id}
+    </update>
+
+    <!-- 根据ID删除成绩记录 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM `result` WHERE `id` = #{id}
+    </delete>
+
+    <!-- 根据ID查询成绩记录 -->
+    <select id="selectById" parameterType="long" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.id = #{id}
+    </select>
+
+    <!-- 查询所有成绩记录 -->
+    <select id="selectAll" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 根据赛程ID查询成绩记录 -->
+    <select id="selectByScheduleId" parameterType="long" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.schedule_id = #{scheduleId}
+        ORDER BY r.score ASC
+    </select>
+
+    <!-- 根据用户ID查询成绩记录 -->
+    <select id="selectByUserId" parameterType="long" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 根据裁判ID查询成绩记录 -->
+    <select id="selectByRefereeId" parameterType="long" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.referee_id = #{refereeId}
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 根据状态查询成绩记录 -->
+    <select id="selectByStatus" parameterType="string" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.status = #{status}
+        ORDER BY r.create_time DESC
+    </select>
+
+    <!-- 查询裁判可以录入成绩的赛程（已完成且裁判已分配） -->
+    <select id="selectAvailableSchedulesForReferee" parameterType="long" resultMap="ResultMap">
+        SELECT DISTINCT s.id as schedule_id, p.name as project_name, s.venue, 
+               s.date as schedule_date, s.time as schedule_time, s.status as schedule_status,
+               rt.status as task_status, rt.id as task_id
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN referee_task rt ON s.id = rt.schedule_id AND rt.referee_id = #{refereeId}
+        WHERE (rt.referee_id = #{refereeId} AND rt.status IN ('ASSIGNED', 'ONGOING', 'FINISHED'))
+        AND s.status IN ('已结束', 'FINISHED', 'COMPLETED')
+        UNION
+        SELECT DISTINCT s.id as schedule_id, p.name as project_name, s.venue, 
+               s.date as schedule_date, s.time as schedule_time, s.status as schedule_status,
+               'COMPLETED' as task_status, NULL as task_id
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE s.status IN ('已结束', 'FINISHED', 'COMPLETED')
+        AND s.id NOT IN (
+            SELECT DISTINCT schedule_id FROM result WHERE referee_id = #{refereeId}
+        )
+        AND s.id IN (
+            SELECT DISTINCT schedule_id FROM registration WHERE status = 'APPROVED'
+        )
+    </select>
+
+    <!-- 查询某个赛程的所有参赛者（已报名且通过审核） -->
+    <select id="selectParticipantsByScheduleId" parameterType="long" resultMap="ResultMap">
+        SELECT reg.user_id, u.username, u.real_name, s.id as schedule_id,
+               p.name as project_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM registration reg
+        LEFT JOIN user u ON reg.user_id = u.id
+        LEFT JOIN schedule s ON reg.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE reg.schedule_id = #{scheduleId} 
+        AND reg.status = 'APPROVED'
+        AND reg.user_id NOT IN (
+            SELECT DISTINCT user_id FROM result WHERE schedule_id = #{scheduleId}
+        )
+    </select>
+
+    <!-- 查询某个赛程的所有成绩记录（按成绩排序） -->
+    <select id="selectResultsByScheduleIdOrderByScore" parameterType="long" resultMap="ResultMap">
+        SELECT r.*, p.name as project_name, u.username, u.real_name, 
+               ref.username as referee_name, s.venue, s.date as schedule_date, 
+               s.time as schedule_time, s.status as schedule_status
+        FROM result r
+        LEFT JOIN schedule s ON r.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON r.user_id = u.id
+        LEFT JOIN user ref ON r.referee_id = ref.id
+        WHERE r.schedule_id = #{scheduleId}
+        ORDER BY r.score ASC
+    </select>
+
+    <!-- 批量插入成绩记录 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO `result` (
+            `schedule_id`, `user_id`, `referee_id`, `score`, `unit`, `rank`, `status`, `remark`,
+            `entry_time`, `confirm_time`, `create_time`, `update_time`
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.scheduleId}, #{item.userId}, #{item.refereeId}, #{item.score}, 
+             #{item.unit}, #{item.rank}, #{item.status}, #{item.remark},
+             #{item.entryTime}, #{item.confirmTime}, NOW(), NOW())
+        </foreach>
+    </insert>
+
+    <!-- 更新成绩状态 -->
+    <update id="updateStatus">
+        UPDATE `result` SET `status` = #{status}, `update_time` = NOW() WHERE `id` = #{id}
+    </update>
+
+    <!-- 更新排名 -->
+    <update id="updateRank">
+        UPDATE `result` SET `rank` = #{rank}, `update_time` = NOW() WHERE `id` = #{id}
+    </update>
+
+    <!-- 更新备注（用于申诉信息） -->
+    <update id="updateRemark">
+        UPDATE `result` SET `remark` = #{remark}, `update_time` = NOW() WHERE `id` = #{id}
+    </update>
+
+    <!-- 确认成绩 -->
+    <update id="confirmResult">
+        UPDATE `result` SET `status` = 'CONFIRMED', `confirm_time` = #{confirmTime}, `update_time` = NOW()
+        WHERE `id` = #{id}
+    </update>
+
+    <!-- 查询已完成但未录入成绩的赛程 -->
+    <select id="selectCompletedSchedulesWithoutResults" parameterType="long" resultMap="ResultMap">
+        SELECT DISTINCT s.id as schedule_id, p.name as project_name, s.venue, 
+               s.date as schedule_date, s.time as schedule_time, s.status as schedule_status
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        WHERE s.status IN ('已结束', 'FINISHED', 'COMPLETED')
+        AND s.id NOT IN (
+            SELECT DISTINCT schedule_id FROM result WHERE referee_id = #{refereeId}
+        )
+        AND s.id IN (
+            SELECT DISTINCT schedule_id FROM registration WHERE status = 'APPROVED'
+        )
+        AND s.id NOT IN (
+            SELECT DISTINCT schedule_id FROM referee_task WHERE referee_id = #{refereeId}
+        )
+    </select>
+
+    <!-- 查询裁判申请录入的赛程 -->
+    <select id="selectAppliedSchedules" parameterType="long" resultMap="ResultMap">
+        SELECT DISTINCT s.id as schedule_id, p.name as project_name, s.venue, 
+               s.date as schedule_date, s.time as schedule_time, s.status as schedule_status,
+               rt.status as apply_status
+        FROM schedule s
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN referee_task rt ON s.id = rt.schedule_id AND rt.referee_id = #{refereeId}
+        WHERE rt.referee_id = #{refereeId} 
+        AND rt.status = 'PENDING'
+        AND s.status IN ('已结束', 'FINISHED', 'COMPLETED')
+    </select>
+
+</mapper> 

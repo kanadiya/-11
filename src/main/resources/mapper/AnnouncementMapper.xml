@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.AnnouncementMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.springboot.entity.Announcement">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="content" property="content" jdbcType="LONGVARCHAR"/>
+        <result column="author" property="author" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="publish_time" property="publishTime" jdbcType="TIMESTAMP"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, title, content, author, status, publish_time, create_time, update_time
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM announcement
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" parameterType="string" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM announcement
+        WHERE status = #{status}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" parameterType="long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM announcement
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectPublished" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM announcement
+        WHERE status = '已发布'
+        ORDER BY publish_time DESC
+        LIMIT 10
+    </select>
+
+    <insert id="insert" parameterType="com.example.springboot.entity.Announcement" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO announcement (title, content, author, status, publish_time)
+        VALUES (#{title}, #{content}, #{author}, #{status}, #{publishTime})
+    </insert>
+
+    <update id="update" parameterType="com.example.springboot.entity.Announcement">
+        UPDATE announcement
+        SET title = #{title},
+            content = #{content},
+            author = #{author},
+            status = #{status},
+            publish_time = #{publishTime},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM announcement WHERE id = #{id}
+    </delete>
+
+</mapper> 

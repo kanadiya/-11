@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.RefereeTaskMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="RefereeTaskResultMap" type="com.example.springboot.entity.RefereeTask">
+        <id column="id" property="id"/>
+        <result column="schedule_id" property="scheduleId"/>
+        <result column="referee_id" property="refereeId"/>
+        <result column="status" property="status"/>
+        <result column="reason" property="reason"/>
+        <result column="apply_time" property="applyTime"/>
+        <result column="assign_time" property="assignTime"/>
+        <result column="start_time" property="startTime"/>
+        <result column="complete_time" property="completeTime"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <!-- 关联字段 -->
+        <result column="project_name" property="projectName"/>
+        <result column="referee_name" property="refereeName"/>
+        <result column="venue" property="venue"/>
+        <result column="date" property="date"/>
+        <result column="time" property="time"/>
+        <result column="participant_count" property="participantCount"/>
+        <result column="schedule_status" property="scheduleStatus"/>
+    </resultMap>
+
+    <!-- 插入裁判任务 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.RefereeTask" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO referee_task (
+            schedule_id, referee_id, status, reason, apply_time, assign_time, 
+            start_time, complete_time, create_time, update_time
+        ) VALUES (
+            #{scheduleId}, #{refereeId}, #{status}, #{reason}, #{applyTime}, #{assignTime},
+            #{startTime}, #{completeTime}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据ID查询裁判任务 -->
+    <select id="selectById" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        WHERE rt.id = #{id}
+    </select>
+
+    <!-- 根据裁判ID查询任务列表 -->
+    <select id="selectByRefereeId" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        WHERE rt.referee_id = #{refereeId}
+        ORDER BY rt.create_time DESC
+    </select>
+
+    <!-- 根据赛程ID查询任务列表 -->
+    <select id="selectByScheduleId" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        WHERE rt.schedule_id = #{scheduleId}
+        ORDER BY rt.create_time DESC
+    </select>
+
+    <!-- 查询所有裁判任务 -->
+    <select id="selectAll" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        ORDER BY rt.create_time DESC
+    </select>
+
+    <!-- 根据状态查询任务列表 -->
+    <select id="selectByStatus" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        WHERE rt.status = #{status}
+        ORDER BY rt.create_time DESC
+    </select>
+
+    <!-- 更新裁判任务 -->
+    <update id="update" parameterType="com.example.springboot.entity.RefereeTask">
+        UPDATE referee_task
+        SET 
+            schedule_id = #{scheduleId},
+            referee_id = #{refereeId},
+            status = #{status},
+            reason = #{reason},
+            apply_time = #{applyTime},
+            assign_time = #{assignTime},
+            start_time = #{startTime},
+            complete_time = #{completeTime},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除裁判任务 -->
+    <delete id="deleteById">
+        DELETE FROM referee_task WHERE id = #{id}
+    </delete>
+
+    <!-- 根据赛程ID和裁判ID查询任务 -->
+    <select id="selectByScheduleIdAndRefereeId" resultMap="RefereeTaskResultMap">
+        SELECT 
+            rt.*,
+            p.name as project_name,
+            u.real_name as referee_name,
+            s.venue,
+            s.date,
+            s.time,
+            s.status as schedule_status,
+            (SELECT COUNT(*) FROM registration r WHERE r.schedule_id = s.id) as participant_count
+        FROM referee_task rt
+        LEFT JOIN schedule s ON rt.schedule_id = s.id
+        LEFT JOIN project p ON s.project_id = p.id
+        LEFT JOIN user u ON rt.referee_id = u.id
+        WHERE rt.schedule_id = #{scheduleId} AND rt.referee_id = #{refereeId}
+    </select>
+
+    <!-- 统计某个赛程的裁判数量 -->
+    <select id="countByScheduleId" resultType="int">
+        SELECT COUNT(*) FROM referee_task WHERE schedule_id = #{scheduleId}
+    </select>
+
+    <!-- 统计某个裁判的任务数量 -->
+    <select id="countByRefereeId" resultType="int">
+        SELECT COUNT(*) FROM referee_task WHERE referee_id = #{refereeId}
+    </select>
+
+    <!-- 查询可用的裁判列表 -->
+    <select id="selectAvailableReferees" resultType="java.util.Map">
+        SELECT 
+            u.id,
+            u.real_name,
+            u.username,
+            u.phone,
+            u.email,
+            u.status,
+            COUNT(rt.id) as task_count
+        FROM user u
+        LEFT JOIN referee_task rt ON u.id = rt.referee_id AND rt.status IN ('ASSIGNED', 'ONGOING')
+        WHERE UPPER(u.role) = 'REFEREE'
+        AND (u.status = 'active' OR u.status = '1' OR u.status = 1)
+        GROUP BY u.id, u.real_name, u.username, u.phone, u.email, u.status
+        ORDER BY task_count ASC, u.real_name ASC
+    </select>
+
+</mapper> 

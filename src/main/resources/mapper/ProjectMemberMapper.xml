@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.ProjectMemberMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.springboot.entity.ProjectMember">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="project_id" property="projectId" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="role" property="role" jdbcType="VARCHAR"/>
+        <result column="join_date" property="joinDate" jdbcType="DATE"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="project_name" property="projectName" jdbcType="VARCHAR"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="real_name" property="realName" jdbcType="VARCHAR"/>
+        <result column="user_role" property="userRole" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, project_id, user_id, role, join_date, status, create_time, update_time
+    </sql>
+
+    <!-- 插入项目成员 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.ProjectMember" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_member (
+            project_id, user_id, role, join_date, status, create_time, update_time
+        ) VALUES (
+            #{projectId}, #{userId}, #{role}, #{joinDate}, #{status}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 根据ID更新项目成员 -->
+    <update id="updateById" parameterType="com.example.springboot.entity.ProjectMember">
+        UPDATE project_member
+        SET role = #{role},
+            status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除项目成员 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM project_member WHERE id = #{id}
+    </delete>
+
+    <!-- 根据项目ID和用户ID删除成员 -->
+    <delete id="deleteByProjectAndUser">
+        DELETE FROM project_member 
+        WHERE project_id = #{projectId} AND user_id = #{userId}
+    </delete>
+
+    <!-- 根据ID查询项目成员 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM project_member
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据项目ID查询所有成员 -->
+    <select id="selectByProjectId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+            pm.*,
+            p.name as project_name,
+            u.username as user_name,
+            u.real_name,
+            u.role as user_role
+        FROM project_member pm
+        LEFT JOIN project p ON pm.project_id = p.id
+        LEFT JOIN user u ON pm.user_id = u.id
+        WHERE pm.project_id = #{projectId}
+        ORDER BY pm.create_time DESC
+    </select>
+
+    <!-- 根据用户ID查询参与的项目 -->
+    <select id="selectByUserId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+            pm.*,
+            p.name as project_name,
+            u.username as user_name,
+            u.real_name,
+            u.role as user_role
+        FROM project_member pm
+        LEFT JOIN project p ON pm.project_id = p.id
+        LEFT JOIN user u ON pm.user_id = u.id
+        WHERE pm.user_id = #{userId} AND pm.status = 1
+        ORDER BY pm.create_time DESC
+    </select>
+
+    <!-- 检查用户是否已在项目中 -->
+    <select id="selectByProjectAndUser" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM project_member
+        WHERE project_id = #{projectId} AND user_id = #{userId}
+    </select>
+
+    <!-- 统计项目成员数量 -->
+    <select id="countByProjectId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM project_member 
+        WHERE project_id = #{projectId} AND status = 1
+    </select>
+
+</mapper> 

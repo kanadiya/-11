@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.springboot.mapper.ProjectMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.example.springboot.entity.Project">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础字段列表 -->
+    <sql id="Base_Column_List">
+        id, name, create_time
+    </sql>
+
+    <!-- 插入项目 -->
+    <insert id="insert" parameterType="com.example.springboot.entity.Project" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project (name, create_time) VALUES (#{name}, #{createTime})
+    </insert>
+
+    <!-- 根据ID删除项目 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM project WHERE id = #{id}
+    </delete>
+
+    <!-- 查询所有项目 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM project
+        ORDER BY create_time DESC
+    </select>
+
+</mapper> 
